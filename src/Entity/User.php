@@ -6,6 +6,11 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Bridge\Doctrine\Validator\Contraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
+
+#[UniqueEntity('email')]
+
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -17,18 +22,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\Email()]
+    #[Assert\Lenght(min:6, max:180)]
     private ?string $email = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'json')]
+    #[Assert\NotNull()]
     private array $roles = [];
 
+    private ?string $plainPassword = null;
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Assert\NotBlank()]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank()]
+    #[Assert\Lenght(min:2, max:50)]
     private ?string $fullname = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -36,6 +48,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
+
+    public function __construct()
+    {
+        this->createdAt = new \DateTimeImmutable(); 
+    }
+
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $adresse = null;
@@ -55,7 +73,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         return $this->email;
     }
-
+ 
     public function setEmail(string $email): static
     {
         $this->email = $email;
@@ -74,7 +92,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @see UserInterface
+     * @see UserInterface 
      */
     public function getRoles(): array
     {
@@ -91,7 +109,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+    /**
+     * Get  plainPassword
+     */
+    public function getPlainPassword(): array
+    {
+        return $this->plainPassword;
+    }
 
+    public function setPlainPassword($plainPassword): static
+    {
+        $this->plainPassword = $plainPassword;
+
+        return $this;
+    }
     /**
      * @see PasswordAuthenticatedUserInterface
      */
